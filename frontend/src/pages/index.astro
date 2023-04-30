@@ -1,0 +1,49 @@
+---
+import Layout from '@layouts/Layout.astro'
+
+---
+
+<Layout title="Welcome to Astro.">
+	<main>
+		<h1>Welcome</h1>
+		<a href="/produit">Produit</a>
+		<a href="/recette">Recettes</a>
+	</main>
+</Layout>
+
+<style>
+
+	.produit_header{
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: var(--Element_Bottom_Margin);
+	}
+
+	.produit_table{
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.produit_table > *{
+		height: 3rem;
+		border-bottom: 1px solid black;
+	}
+
+	.header, .produit_table_content{
+		padding: 0 .5rem;
+	}
+
+	.header{
+		font-weight: bold;
+		background-color: lightcyan;
+		display: flex;
+		align-items: center;
+	}
+
+	.produit_table_content{
+		height: 2.5rem;
+		display: flex;
+		align-items: center;
+	}
+	
+</style>

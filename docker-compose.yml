@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  backend: 
+    build: ./backend
+    ports:
+      - "5000:5000"
+  db:
+    image: "postgres:15.2-alpine3.17"
+    environment:
+      POSTGRES_PASSWORD: 1234567
+      POSTGRES_USER: momo
+    ports:
+      - "5432:5432"
+  # frontend:
+  #   build: ./frontend
+  #   environment:
+  #    HOST: 0.0.0.0
+  #    PORT: 3000
+  #   ports:
+  #    - "3000:3000"
+  #   links:
+  #     - backend
+

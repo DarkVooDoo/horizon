@@ -1,0 +1,106 @@
+---
+import Layout from "@layouts/Layout.astro"
+const {id} = Astro.params
+const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
+const recipe = await fetch(`http:/${host}:5000/api/recipe?rId=${id}`)
+const data = await recipe.json() as {name: string, price: number, ingredients: {id: string, name: string, quantity: number, price: number}[]}
+---
+<Layout title={`${data.name}`}>
+    <main>
+        <h1 class="recipe_name">{data.name} </h1>
+        <div class="recipe_header">
+            <h3></h3>
+            <h3>Produit</h3>
+            <h3>Quantité</h3>
+        </div>
+        {data.ingredients.map(ingredient=>(
+            <div class="recipe_ingredient">
+                <h3 class="recipe_ingredient_text">{ingredient.name}</h3>
+                <h3 class="recipe_ingredient_text">{ingredient.quantity} </h3>
+            </div>
+        ))}
+        <details class="recipe_summary">
+            <summary>Prix de la recette</summary>
+            {data.ingredients.map(item=>(
+                <div class="recipe_prices">
+                    <p class="recipe_prices_text">{item.name} </p>
+                    <p class="recipe_prices_text">{item.quantity}</p>
+                    <p class="recipe_prices_text">{item.price}£ </p>
+                </div>
+            ))}
+            <div class="recipe_summary_total">
+                <h3 class="recipe_summary_total_label">Total</h3>
+                <h3 class="recipe_summary_total_price">{data.price}£ </h3>
+            </div>
+        </details>
+        <button class="downloadBtn">Telecharger</button>
+    </main>
+</Layout>
+
+<script>
+    const downloadBtn = document.querySelector(".downloadBtn") as HTMLButtonElement
+    downloadBtn.addEventListener("click", async()=>{
+        const download = await fetch(`http://localhost:5000/api/recipe`,{
+            headers: [["x-pdf", "Hello World"]]
+        })
+    })
+</script>
+
+<style>
+    main{
+        counter-increment: count 0;
+    }
+    main > *{
+        margin-bottom: var(--Element_Bottom_Margin);
+    }
+    .recipe_name{
+        font-weight: bold;
+        font-size: 1.3rem;
+        text-align: center;
+    }
+    .recipe_header, .recipe_ingredient{
+        display: grid;
+        grid-template-columns: .3fr 2fr 1fr;
+        align-items: center;
+    }
+    .recipe_ingredient{
+        height: 3rem;
+        padding: 5px;
+        border-bottom: 1px solid var(--Primary_Color);
+        margin: 0;
+    }
+    .recipe_ingredient::before{
+        counter-increment: count;
+        content: counter(count)" -";
+    }
+    .recipe_ingredient_text{
+        font-weight: 400;
+    }
+    .recipe_prices{
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+    }
+    .recipe_summary{
+        margin-top: var(--Element_Bottom_Margin);
+        background-color: lightgray;
+        padding: .5rem;
+    }
+    .recipe_prices_text{
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid black;
+    }
+    .recipe_summary_total{
+        margin-top: var(--Element_Bottom_Margin);
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        grid-template-areas: ". label total";
+    }
+    .recipe_summary_total_label{
+        grid-area: label;
+    }
+    .recipe_summary_total_price{
+        grid-area: total;
+    }
+</style>

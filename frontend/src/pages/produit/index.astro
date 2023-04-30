@@ -1,0 +1,178 @@
+---
+import Modal from '../../components/Modal.astro'
+import Layout from '../../layouts/Layout.astro'
+import Trash from "../../../trash.svg"
+const header = ["Produit","Packaging(Gr)","Prix"]
+const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
+const fetchProduit = await fetch(`http://${host}:5000/api/produit`)
+const data = await fetchProduit.json() as {id: string, name: string, packaging: number, price: number}[]
+---
+
+<Layout title="Produits">
+	<main>
+		<div class="produit_header">
+			<h1>Produits</h1>
+			<button type="button" class="addBtn">Nouveau Produit</button>
+		</div>
+		<div class="produit_table">
+		{header.map((name)=>(
+			<h3 class="produit_table_header">{name} </h3>
+		))}
+		{data.map((item, index)=>(
+			<div class="produit_table_content" style={index % 2 !== 0 ? "background-color: lightgray": ""} >{item.name} </div>
+			<div class="produit_table_content" style={index % 2 !== 0 ? "background-color: lightgray": ""} >{item.packaging} </div>
+			<div class="produit_table_content" style={index % 2 !== 0 ? "background-color: lightgray;justify-content: space-between": "justify-content: space-between"} >{item.price} <button data-id={item.id} class="deleteBtn"><img src={Trash} alt="delete" style="pointer-events: none;" /></button></div>
+		))}
+		</div>
+		<Modal>
+			<form class="m-modal">
+				<h2 class="modal_head">Nouveau Produit</h2>
+				<div class="modal_field">
+					<input type="text" name="name" id="name" class="modal_field_input" autocomplete="off" placeholder="Produit" />
+				</div>
+				<div class="modal_field">
+					<input type="number" name="packaging" id="packaging" class="modal_field_input" autocomplete="off" placeholder="Packaging" />
+				</div>
+				<div class="modal_field">
+					<input type="number" name="price" id="price" class="modal_field_input" autocomplete="off" placeholder="Prix" />
+				</div>
+				<button class="onAddProduit">Creer</button>
+			</form>
+		</Modal>
+	</main>
+</Layout>
+
+<script>
+	const deleteBtn = document.querySelectorAll(".deleteBtn") as NodeListOf<HTMLButtonElement>
+	const submitBtn = document.querySelector(".onAddProduit") as HTMLButtonElement
+	const addBtn = document.querySelector(".addBtn") as HTMLButtonElement
+	const modal = document.querySelector(".m-wrapper") as HTMLDivElement
+	const name = document.querySelector("#name") as HTMLInputElement
+	const packaging = document.querySelector("#packaging") as HTMLInputElement
+	const price = document.querySelector("#price") as HTMLInputElement
+
+	addBtn.addEventListener("click", (e)=>{
+		modal.classList.toggle("open")
+	})
+	submitBtn.onclick = (e)=>{
+		e.preventDefault()
+		onAddProduit()
+	}
+	deleteBtn.forEach(btn=>{
+		btn.addEventListener("click", async (e:any)=>{
+			const id = e.target.dataset.id 
+			console.log(e.target)
+			const deleteProduit = await fetch(`http://localhost:5000/api/produit`,{
+				method: "DELETE",
+				headers: [["Content-Type", "application/json"], ["Access-Control-Allow-Origin", "*"]],
+				body: JSON.stringify({id})
+			})
+			if(deleteProduit.status === 200){
+				window.location.reload()
+			}
+		})
+	})
+	const onAddProduit = async ()=>{
+		const addProduit = await fetch(`http://localhost:5000/api/produit`, {
+			method: "POST",
+			headers: [["Content-Type", "application/json"]],
+			body: JSON.stringify({name: name.value, packaging: parseInt(packaging.value), price: parseFloat(price.value)})
+		})
+		if (addProduit.status === 200){
+			window.location.reload()
+		}
+	}
+</script>
+
+<style>
+
+	.produit_header{
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: var(--Element_Bottom_Margin);
+	}
+
+	.addBtn{
+		background-color: var(--Primary_Color);
+		font-weight: bold;
+		border-radius: 10px;
+		height: 2rem;
+		padding: 0 .5rem;
+	}
+
+	.produit_table{
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		align-items: center;
+	}
+
+	.produit_table_header{
+		background-color: var(--Primary_Color);
+		height: 3.5rem;
+		display: flex;
+		align-items: center;
+		font-size: 1.1rem;
+	}
+
+	.produit_table_header, .produit_table_content{
+		padding: 0 .5rem;
+	}
+
+	.produit_table_content{
+		height: 3rem;
+		display: flex;
+		align-items: center;
+	}
+
+	.deleteBtn{
+		height: 2rem;
+		width: 2rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		border:1px solid  rgba(0, 0, 0, .3);
+	}
+
+	.deleteBtn img{
+		height: 70%;
+		width: 70%;
+	}
+
+	.m-modal{
+		width: 80vw;
+		background-color: white;
+		padding: .5rem;
+		border-radius: 5px;
+	}
+
+	.m-modal > *{
+		margin-bottom: var(--Element_Bottom_Margin);
+	}
+
+	.modal_field{
+		height: 2rem;
+		width: 100%;
+	}
+
+	.modal_field_input{
+		height: 100%;
+		width: 100%;
+		border: none;
+		border-bottom: 1px solid black;
+	}
+
+	.modal_head{
+		text-align: center;
+	}
+
+	.onAddProduit{
+		background-color: var(--Primary_Color);
+		height: 2rem;
+		border-radius: 5px;
+		font-weight: bold;
+		padding: 0 .5rem;
+	}
+	
+</style>

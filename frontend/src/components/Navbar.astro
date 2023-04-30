@@ -1,0 +1,38 @@
+---
+
+---
+
+<nav class="nav">
+    <a href="/">Root</a>
+    <div class="menu">
+        <div class="bar" />
+        <div class="bar"/>
+        <div class="bar"/>
+    </div>
+</nav>
+
+<style>
+    .nav{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--Mobile_Padding);
+        height: 3rem;
+        background-color: var(--Primary_Color);
+    }
+    .menu{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 5px;
+        border: 1px solid black;
+    }
+    .bar{
+        height: .3rem;
+        width: 80%;
+        background-color: black;
+    }
+</style>

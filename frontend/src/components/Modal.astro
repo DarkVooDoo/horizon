@@ -1,0 +1,46 @@
+---
+interface Props{
+}
+---
+
+<div class="m-wrapper">
+    <div class="modal">
+        <slot />
+    </div>
+</div>
+
+<script>
+    const outer = document.querySelector(".m-wrapper") as HTMLDivElement
+    outer.addEventListener("click", (e)=>{
+        e.stopPropagation()
+        outer.classList.toggle("open")
+    })
+    const modal = document.querySelector(".modal") as HTMLDivElement
+    modal.onclick = (e)=>{e.stopPropagation()}
+</script>
+
+<style>
+    .m-wrapper{
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, .5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .m-wrapper{
+		display: none;
+	}
+
+    .modal{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+	.open{
+		display: flex;
+	}
+</style>
