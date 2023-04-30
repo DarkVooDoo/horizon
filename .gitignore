@@ -17,3 +17,5 @@ TODO.md
 /frontend/.env.production
 
 /frontend/.DS_Store
+
+*.pem

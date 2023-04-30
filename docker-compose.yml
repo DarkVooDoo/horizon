@@ -11,13 +11,13 @@ services:
       POSTGRES_USER: momo
     ports:
       - "5432:5432"
-  # frontend:
-  #   build: ./frontend
-  #   environment:
-  #    HOST: 0.0.0.0
-  #    PORT: 3000
-  #   ports:
-  #    - "3000:3000"
-  #   links:
-  #     - backend
+  frontend:
+    build: ./frontend
+    environment:
+     HOST: 0.0.0.0
+     PORT: 3000
+    ports:
+     - "3000:3000"
+    links:
+      - backend
 
