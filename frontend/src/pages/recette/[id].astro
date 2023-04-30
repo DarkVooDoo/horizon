@@ -2,7 +2,7 @@
 import Layout from "@layouts/Layout.astro"
 const {id} = Astro.params
 const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
-const recipe = await fetch(`http:/${host}:5000/api/recipe?rId=${id}`)
+const recipe = await fetch(`http://backend:5000/api/recipe?rId=${id}`)
 const data = await recipe.json() as {name: string, price: number, ingredients: {id: string, name: string, quantity: number, price: number}[]}
 ---
 <Layout title={`${data.name}`}>

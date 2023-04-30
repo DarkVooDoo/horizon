@@ -4,7 +4,7 @@ import Modal from "@components/Modal.astro"
 
 const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
 
-const fetchRecettes = await fetch(`http://${host}:5000/api/recipe`)
+const fetchRecettes = await fetch(`http://backend:5000/api/recipe`)
 const data = await fetchRecettes.json() as {recipe: {id: string, name: string, items: number}[], produit: {id: string, name: string, packaging: number, price: number}[]}
 ---
 <Layout title="Recettes">
