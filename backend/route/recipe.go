@@ -46,6 +46,7 @@ func RecipeRoute(res http.ResponseWriter, req *http.Request) {
 				return
 			}
 			recipesAndProduits := RecipeIngredients{Recipe: myRecipes, Produit: produits}
+			fmt.Println(recipesAndProduits)
 			payload, _ := json.Marshal(recipesAndProduits)
 			res.Header().Add("Content-Type", "application/json")
 			res.Write(payload)

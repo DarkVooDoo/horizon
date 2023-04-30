@@ -4,7 +4,7 @@ import Modal from "@components/Modal.astro"
 
 const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
 
-const fetchRecettes = await fetch(`http://backend:5000/api/recipe`)
+const fetchRecettes = await fetch(`http://${host}:5000/api/recipe`)
 const data = await fetchRecettes.json() as {recipe: {id: string, name: string, items: number}[], produit: {id: string, name: string, packaging: number, price: number}[]}
 ---
 <Layout title="Recettes">
@@ -36,28 +36,30 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         ))}
         <Modal>
             <div class="modal">
-                <h3 class="modal_header">Nouvelle Recette</h3>
-                <div class="modal_form">
-                    <div class="modal_recipe_dfield_field">
-                        <input type="text" name="name" id="name" autocomplete="off" placeholder="Nom de la recette" class="modal_recipe_input input_name">
-                    </div>
-                    <div class="modal_recipe_dfield_field">
-                        <input type="number" name="variant" id="variant" autocomplete="off" placeholder="Variante" class="modal_recipe_input">
-                    </div>
-                    <div class="modal_recipe_dfield_field" id="ingredients">
-                        <p id="ingredients_display">{data.produit[0].name} </p>
-                        <div id="ingredients_options" class="hidden">
-                            {data.produit.map(item=>(
-                                <div  data-id={item.id} class="option">{item.name} </div>
-                            ))}
+                {data.produit.length > 0 ? <> 
+                    <h3 class="modal_header">Nouvelle Recette</h3>
+                    <div class="modal_form">
+                        <div class="modal_recipe_dfield_field">
+                            <input type="text" name="name" id="name" autocomplete="off" placeholder="Nom de la recette" class="modal_recipe_input input_name">
                         </div>
+                        <div class="modal_recipe_dfield_field">
+                            <input type="number" name="variant" id="variant" autocomplete="off" placeholder="Variante" class="modal_recipe_input">
+                        </div>
+                        <div class="modal_recipe_dfield_field" id="ingredients">
+                            <p id="ingredients_display">{data.produit[0].name} </p>
+                            <div id="ingredients_options" class="hidden">
+                                {data.produit.map(item=>(
+                                    <div  data-id={item.id} class="option">{item.name} </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div class="modal_recipe_dfield_field">
+                            <input type="number" name="quantity" id="quantity" required autocomplete="off" class="modal_recipe_input">
+                            <label for="quantity" class="modal_recipe_label">Quantité</label>
+                        </div>                        
                     </div>
-                    <div class="modal_recipe_dfield_field">
-                        <input type="number" name="quantity" id="quantity" required autocomplete="off" class="modal_recipe_input">
-                        <label for="quantity" class="modal_recipe_label">Quantité</label>
-                    </div>                        
-                </div>
-                <button class="add_recipe_btn">Creer</button>
+                    <button class="add_recipe_btn">Creer</button>
+                </> : <p>Ajouter des produits d'abort</p>}
             </div>
         </Modal>
     </main>
@@ -65,42 +67,42 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
 
 <script>
     const ingredients: {id: string | undefined, name: string | null, quantity: number}[] = []
-    const addRecipeBtn = document.querySelector(".add_recipe_btn") as HTMLButtonElement
+    const addRecipeBtn = document.querySelector(".add_recipe_btn") as HTMLButtonElement | null
     const modal = document.querySelector(".m-wrapper") as HTMLDivElement
     const ingredientsParent = document.querySelector(".modal_form") as HTMLDivElement
     const nameInput = document.querySelector("#name") as HTMLInputElement
     const variantInput = document.querySelector("#variant") as HTMLInputElement
     const ingredientInput = document.querySelector("#ingredients") as HTMLSelectElement
-    const quantityInput = document.querySelector("#quantity") as HTMLInputElement
-    const displayProduit = document.querySelector("#ingredients_display") as HTMLParagraphElement
+    const quantityInput = document.querySelector("#quantity") as HTMLInputElement | null
+    const displayProduit = document.querySelector("#ingredients_display")
     const optionsParent = document.querySelector("#ingredients_options") as HTMLDivElement
     const options = document.querySelectorAll(".option") as NodeListOf<HTMLDivElement>
     const openNewRecipeModal = document.querySelector(".recipe_top_addBtn") as HTMLButtonElement
     const openActions = document.querySelectorAll(".recipes_actions") as NodeListOf<HTMLButtonElement>
     const deleteRecipeBtn = document.querySelectorAll(".delete") as NodeListOf<HTMLParagraphElement>
-    let currentIngredientId:string | undefined = options[0].dataset.id
+    let currentIngredientId:string | undefined = options.length > 0 ? options[0].dataset.id : undefined
             
     openNewRecipeModal.addEventListener("click", (e)=>{
         modal.classList.toggle("open")
     })
-    displayProduit.addEventListener("click", (e)=>{
+    displayProduit?.addEventListener("click", (e)=>{
         e.stopPropagation()
         optionsParent.classList.toggle("hidden")
     })
 
     options.forEach(item=>{
         item.addEventListener("click", (e)=>{
-            displayProduit.textContent = item.textContent
+            displayProduit ? displayProduit.textContent = item.textContent : ""
             currentIngredientId = item.dataset.id
             optionsParent.classList.toggle("hidden")
         })
     })
-    quantityInput.addEventListener("keypress", (e)=>{
+    quantityInput?.addEventListener("keypress", (e)=>{
         if (e.key === "Enter"){
-            ingredients.push({id: currentIngredientId, name: displayProduit.textContent, quantity: parseInt(quantityInput.value)})
+            ingredients.push({id: currentIngredientId, name: displayProduit?.textContent || "", quantity: parseInt(quantityInput.value)})
             const newIngredient = document.createElement("p")
             const quantity = document.createElement("p")
-            newIngredient.innerHTML = displayProduit.textContent || ""
+            newIngredient.innerHTML = displayProduit?.textContent || ""
             quantity.innerHTML = quantityInput.value
             ingredientsParent.append(newIngredient)
             ingredientsParent.append(quantity)
@@ -125,7 +127,7 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
             if(deleteRecipe.status === 200) window.location.reload()
         })
     })
-    addRecipeBtn.addEventListener("click", async ()=>{
+    addRecipeBtn?.addEventListener("click", async ()=>{
         const addRecipe = await fetch("http://localhost:5000/api/recipe",{
             method: "POST",
             headers: [["Content-Type", "application/json"]],

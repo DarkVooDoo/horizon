@@ -50,7 +50,7 @@ func ProduitRoute(res http.ResponseWriter, req *http.Request) {
 }
 
 func (Produit) GetProduits() ([]Produit, error) {
-	var produits []Produit
+	var produits []Produit = make([]Produit, 0)
 	var name, id string
 	var packaging uint
 	var price float32

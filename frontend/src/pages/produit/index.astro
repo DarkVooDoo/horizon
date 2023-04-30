@@ -4,7 +4,7 @@ import Layout from '@layouts/Layout.astro'
 import Trash from "/trash.svg"
 const header = ["Produit","Packaging(Gr)","Prix"]
 const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
-const fetchProduit = await fetch(`http://backend:5000/api/produit`)
+const fetchProduit = await fetch(`http://${host}:5000/api/produit`)
 const data = await fetchProduit.json() as {id: string, name: string, packaging: number, price: number}[]
 ---
 
