@@ -1,6 +1,7 @@
 package route
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -58,24 +59,36 @@ func (Produit) GetProduits() ([]Produit, error) {
 	rows, err := db.GetDbInstance().Query(Query)
 	if err != nil {
 		fmt.Println(err)
-		return []Produit{}, errors.New("query failed")
+		return nil, errors.New("query failed")
 	}
+	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&id, &name, &packaging, &price)
 		produits = append(produits, Produit{Id: id, Name: name, Packaging: packaging, Price: price})
 	}
-	rows.Close()
 	return produits, nil
 }
 
 func (p Produit) CreateProduit() ([]byte, error) {
-	var id, name string
+	var id, name, supplier string
 	var packaging uint
 	var price float32
-	const Query = `INSERT INTO Produit (produit_name, produit_packaging, produit_price) VALUES($1,$2,ROUND($3,2)) RETURNING produit_id, produit_name, produit_packaging, produit_price`
-	produitInserted := db.GetDbInstance().QueryRow(Query, p.Name, p.Packaging, p.Price)
-	produitInserted.Scan(&id, &name, &packaging, &price)
-	pr := Produit{id, name, packaging, price}
+	var row *sql.Row
+	if p.IsNewSupplier {
+		mySupplier := Supplier{Name: p.Supplier}
+		supplierId, _ := mySupplier.CreateSupplier()
+		const query = "INSERT INTO Produit (produit_name, produit_packaging, produit_price, produit_supplier_id) VALUES($1,$2,ROUND($3,2), $4) RETURNING produit_id, produit_name, produit_packaging, produit_price"
+		produitError := db.GetDbInstance().QueryRow(query, p.Name, p.Packaging, p.Price, supplierId).Scan(&id, &name, &packaging, &price)
+		if produitError != nil {
+			return nil, errors.New("error on insert")
+		}
+
+	} else {
+		const Query = `INSERT INTO Produit (produit_name, produit_packaging, produit_price, produit_supplier_id) VALUES($1,$2,ROUND($3,2), $4) RETURNING produit_id, produit_name, produit_packaging, produit_price, produit_supplier_id`
+		row = db.GetDbInstance().QueryRow(Query, p.Name, p.Packaging, p.Price, p.Supplier)
+		row.Scan(&id, &name, &packaging, &price)
+	}
+	pr := Produit{Id: id, Name: name, Supplier: supplier, Packaging: packaging, Price: price}
 	data, _ := json.Marshal(pr)
 	return data, nil
 }
@@ -97,13 +110,15 @@ func (p Produit) ModifyProduit() Produit {
 	RETURNING produit_id, produit_name, produit_packaging, produit_price`
 	row := db.GetDbInstance().QueryRow(query, p.Name, p.Packaging, p.Price, p.Id)
 	row.Scan(&id, &name, &packaging, &price)
-	p = Produit{id, name, packaging, price}
+	p = Produit{Id: id, Name: name, Packaging: packaging, Price: price}
 	return p
 }
 
 type Produit struct {
-	Id        string  `json:"id"`
-	Name      string  `json:"name"`
-	Packaging uint    `json:"packaging"`
-	Price     float32 `json:"price"`
+	Id            string  `json:"id"`
+	IsNewSupplier bool    `json:"newSupplier"`
+	Name          string  `json:"name"`
+	Supplier      string  `json:"supplier"`
+	Packaging     uint    `json:"packaging"`
+	Price         float32 `json:"price"`
 }

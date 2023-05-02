@@ -1,0 +1,56 @@
+---
+interface Props{
+    value: string
+    id: string
+    cssId: string
+}
+const {cssId, value, id} = Astro.props
+---
+
+<div class="select" id={cssId}>
+    <p id="select_value" data-id={id}>{value} </p>
+    <div id="select_option" class="hidden">
+        <slot/>
+    </div>
+</div>
+
+<script>
+    const display = document.querySelector("#select_value") as HTMLParagraphElement
+    const options = document.querySelector("#select_option") as HTMLDivElement
+
+    display.onclick = ()=>{
+        options.classList.toggle("hidden")
+    }
+</script>
+
+<style>
+    .select{
+        position: relative;
+        height: 3rem;
+    }
+    #select_value{
+        padding: 0 .5rem;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        border: 1px solid black;
+    }
+    #select_option{
+        padding: 0 .5rem;
+        position: absolute;
+        top: 3.9rem;
+        width: 100%;
+        background-color: lightgray;
+    }
+    #select_option::after{
+        content: "";
+        position: absolute;
+        top: -.5rem;
+        left: .3rem;
+        border: .5rem solid transparent;
+        border-left: .5rem solid lightgray;
+        border-bottom: .5rem solid lightgray;
+        transform: rotate(135deg);
+    }
+</style>

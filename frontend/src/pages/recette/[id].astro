@@ -3,11 +3,21 @@ import Layout from "@layouts/Layout.astro"
 const {id} = Astro.params
 const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
 const recipe = await fetch(`http://${host}:5000/api/recipe?rId=${id}`)
-const data = await recipe.json() as {name: string, price: number, ingredients: {id: string, name: string, quantity: number, price: number}[]}
+const data = await recipe.json() as {id: string, name: string, price: number, ingredients: {id: string, name: string, quantity: number, price: number}[]}
 ---
 <Layout title={`${data.name}`}>
     <main>
-        <h1 class="recipe_name">{data.name} </h1>
+        <div class="recipe_top">
+            <div class="recipe_logo" />
+            <div class="recipe_top_content">
+                <h1 class="recipe_name">{data.name} </h1>
+                <div class="recipe_top_content_action">
+                    <button class="recipe_top_content_btn">Modifier</button>
+                    <button class="recipe_top_content_btn">Supprimer</button>
+                </div>
+            </div>
+
+        </div>
         <div class="recipe_header">
             <h3></h3>
             <h3>Produit</h3>
@@ -33,7 +43,7 @@ const data = await recipe.json() as {name: string, price: number, ingredients: {
                 <h3 class="recipe_summary_total_price">{data.price}£ </h3>
             </div>
         </details>
-        <button class="downloadBtn">Telecharger</button>
+        <button class="downloadBtn" data-id={data.id}>Telecharger</button>
     </main>
 </Layout>
 
@@ -41,8 +51,9 @@ const data = await recipe.json() as {name: string, price: number, ingredients: {
     const downloadBtn = document.querySelector(".downloadBtn") as HTMLButtonElement
     downloadBtn.addEventListener("click", async()=>{
         const download = await fetch(`http://localhost:5000/api/recipe`,{
-            headers: [["x-pdf", "Hello World"]]
+            headers: [["x-pdf", downloadBtn.dataset.id || ""]]
         })
+
     })
 </script>
 
@@ -53,10 +64,32 @@ const data = await recipe.json() as {name: string, price: number, ingredients: {
     main > *{
         margin-bottom: var(--Element_Bottom_Margin);
     }
+    .recipe_top{
+        display: grid;
+        grid-template-columns: 1fr 3fr;
+    }
+    .recipe_logo{
+        width: 7rem;
+        height: 7rem;
+        border: 1px solid black;
+    }
+    .recipe_top_content{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
     .recipe_name{
         font-weight: bold;
         font-size: 1.3rem;
         text-align: center;
+        margin-bottom: var(--Element_Bottom_Margin);
+    }
+    .recipe_top_content_btn{
+        height: 2rem;
+        width: 7rem;
+        border-radius: 25px;
+        background-color: lightgray;
     }
     .recipe_header, .recipe_ingredient{
         display: grid;

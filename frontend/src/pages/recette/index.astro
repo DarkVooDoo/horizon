@@ -19,24 +19,24 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
             ))}
         </div>
         {data.recipe.map(item=>(
-            <a href={`/recette/${item.id}`} class="recipes_content">
-                <div class="recipes_content_box">{item.name} 
+            <div class="recipes_content">
+                <a href={`/recette/${item.id}`} class="recipes_content_box">{item.name} </a>
+                <p class="recipes_content_box">
+                    {item.items}
                     <button class="recipes_actions">
                         <div class="dot"/>
                         <div class="dot"/>
                         <div class="dot"/> 
-                        <div class="recipes_actions_option" data-id={item.id}>
+                        <div class="recipes_actions_option hidden" data-id={item.id}>
                             <p >Modifier</p>
                             <p id="delete">Supprimer</p>
                         </div>  
                     </button> 
-                </div>
-                <p class="recipes_content_box">{item.items}</p>    
-            </a>
+                </p>    
+            </div>
         ))}
         <Modal>
             <div class="modal">
-                {data.produit.length > 0 ? <> 
                     <h3 class="modal_header">Nouvelle Recette</h3>
                     <div class="modal_form">
                         <div class="modal_recipe_dfield_field">
@@ -46,7 +46,7 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
                             <input type="number" name="variant" id="variant" autocomplete="off" placeholder="Variante" class="modal_recipe_input">
                         </div>
                         <div class="modal_recipe_dfield_field" id="ingredients">
-                            <p id="ingredients_display">{data.produit[0].name} </p>
+                            <p id="ingredients_display">{data.produit.length > 0 ? data.produit[0].name : ""} </p>
                             <div id="ingredients_options" class="hidden">
                                 {data.produit.map(item=>(
                                     <div  data-id={item.id} class="option">{item.name} </div>
@@ -59,7 +59,6 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
                         </div>                        
                     </div>
                     <button class="add_recipe_btn">Creer</button>
-                </> : <p>Ajouter des produits d'abort</p>}
             </div>
         </Modal>
     </main>
@@ -79,7 +78,7 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
     const options = document.querySelectorAll(".option") as NodeListOf<HTMLDivElement>
     const openNewRecipeModal = document.querySelector(".recipe_top_addBtn") as HTMLButtonElement
     const openActions = document.querySelectorAll(".recipes_actions") as NodeListOf<HTMLButtonElement>
-    const deleteRecipeBtn = document.querySelectorAll(".delete") as NodeListOf<HTMLParagraphElement>
+    const deleteRecipeBtn = document.querySelectorAll("#delete") as NodeListOf<HTMLParagraphElement>
     let currentIngredientId:string | undefined = options.length > 0 ? options[0].dataset.id : undefined
             
     openNewRecipeModal.addEventListener("click", (e)=>{
@@ -111,8 +110,9 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         }
     })
     openActions.forEach(item=>{
-        item.addEventListener("click", async()=>{
+        item.addEventListener("click", async(e)=>{
            //Open The Actions
+           item.children.item(3)?.classList.toggle("hidden")
         })
     })
     deleteRecipeBtn.forEach(item=>{
@@ -128,12 +128,14 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         })
     })
     addRecipeBtn?.addEventListener("click", async ()=>{
-        const addRecipe = await fetch("http://localhost:5000/api/recipe",{
-            method: "POST",
-            headers: [["Content-Type", "application/json"]],
-            body: JSON.stringify({name: nameInput.value, variant: parseInt(variantInput.value), ingredients})
-        })
-        if(addRecipe.status === 200)window.location.reload()
+        if(ingredients.length > 0){
+            const addRecipe = await fetch("http://localhost:5000/api/recipe",{
+                method: "POST",
+                headers: [["Content-Type", "application/json"]],
+                body: JSON.stringify({name: nameInput.value, variant: parseInt(variantInput.value), ingredients})
+            })
+            if(addRecipe.status === 200)window.location.reload()
+        }
     })
 </script>
 
@@ -143,6 +145,7 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         height: 2rem;
         width: 2rem;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         gap: 3px;
         align-items: center;
@@ -158,8 +161,8 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
     }
     .recipes_actions_option{
         position: absolute;
-        left: 2.2rem;
-        top: 0;
+        right: 0;
+        top: 2.1rem;
         width: 5rem;
         background-color: darkgray;
         z-index: 2;
@@ -181,12 +184,15 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         grid-template-columns: 2fr 1fr;
         align-items: center;
     }
+    .recipes{
+        height: 2.5rem;
+    }
     .recipes_content{
         border-bottom: 1px solid black;
-        height: 3.5rem;
+        height: 3rem;
     }
     .recipes_header{
-        height: 2rem;
+        height: 2.5rem;
         display: flex;
         align-items: center;
         background-color: var(--Primary_Color);
@@ -195,8 +201,12 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
     .recipes_header, .recipes_content_box{
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: .3rem;
         padding: 0 .5rem;
+        height: 100%;
+        width: 100%;
+        z-index: 1;
     }
     .modal{
         width: 85vw;

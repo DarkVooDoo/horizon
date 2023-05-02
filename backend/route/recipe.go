@@ -36,7 +36,11 @@ func RecipeRoute(res http.ResponseWriter, req *http.Request) {
 			res.Header().Add("Content-Type", "application/json")
 			res.Write(payload)
 		} else if req.Header.Get("x-pdf") != "" {
-			fmt.Println(req.Header.Get("x-pdf"))
+			pdfId := req.Header.Get("x-pdf")
+			r, _ := recipe.GetRecipe(pdfId)
+			r.CreatePdfRecipe()
+			res.Header().Add("Content-Disposition", "attachment; filename=test.txt")
+			http.ServeFile(res, req, "test.txt")
 		} else {
 			var produit Produit
 			produits, produitError := produit.GetProduits()
@@ -46,7 +50,6 @@ func RecipeRoute(res http.ResponseWriter, req *http.Request) {
 				return
 			}
 			recipesAndProduits := RecipeIngredients{Recipe: myRecipes, Produit: produits}
-			fmt.Println(recipesAndProduits)
 			payload, _ := json.Marshal(recipesAndProduits)
 			res.Header().Add("Content-Type", "application/json")
 			res.Write(payload)
@@ -118,7 +121,7 @@ func (FullRecipe) GetRecipe(id string) (FullRecipe, error) {
 	var recipe_id, recipe_name, produit_name, produit_id string
 	var quantity uint32
 	var ingredient_price float32
-	var ingredients []Ingredient
+	var ingredients = make([]Ingredient, 0)
 	query := `SELECT recipe_id, recipe_name, produit_id, produit_name, ingredient_quantity, (produit_price/produit_packaging)*ingredient_quantity AS price FROM Recipe 
 	LEFT JOIN Ingredient ON recipe_id=ingredient_recipe_id 
 	LEFT JOIN Produit ON produit_id=ingredient_produit_id 
@@ -129,7 +132,9 @@ func (FullRecipe) GetRecipe(id string) (FullRecipe, error) {
 	}
 	for rows.Next() {
 		rows.Scan(&recipe_id, &recipe_name, &produit_id, &produit_name, &quantity, &ingredient_price)
-		ingredients = append(ingredients, Ingredient{produit_id, produit_name, quantity, float32(math.Floor(float64(ingredient_price*100)) / 100)})
+		if produit_id != "" {
+			ingredients = append(ingredients, Ingredient{produit_id, produit_name, quantity, float32(math.Floor(float64(ingredient_price*100)) / 100)})
+		}
 	}
 	var price float32 = 0
 	for _, ingre := range ingredients {
@@ -178,8 +183,8 @@ func (r FullRecipe) CreatePdfRecipe() {
 		pdf.CellFormat(ingredientCellWith, Ingredient_Box_Height, strconv.Itoa(int(ingredient.Quantity)), "1", 0, "C M", false, 0, "")
 		pdf.CellFormat(ingredientCellWith, Ingredient_Box_Height, strconv.Itoa(int(ingredient.Quantity*uint32(r.Variant))), "1", 1, "C M", false, 0, "")
 	}
+	fmt.Println("Finish")
 	pdf.OutputFileAndClose("test.pdf")
-
 }
 
 type FullRecipe struct {

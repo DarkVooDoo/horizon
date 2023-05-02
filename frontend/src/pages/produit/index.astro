@@ -1,11 +1,14 @@
 ---
 import Modal from '@components/Modal.astro'
 import Layout from '@layouts/Layout.astro'
+import SelectOption from '@components/SelectOption.astro'
 import Trash from "/trash.svg"
 const header = ["Produit","Packaging(Gr)","Prix"]
 const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
 const fetchProduit = await fetch(`http://${host}:5000/api/produit`)
 const data = await fetchProduit.json() as {id: string, name: string, packaging: number, price: number}[]
+const fetchSupplier = await fetch(`http://${host}:5000/api/supplier`)
+const supplier = await fetchSupplier.json() as {id: string, name: string}[]
 ---
 
 <Layout title="Produits">
@@ -27,6 +30,18 @@ const data = await fetchProduit.json() as {id: string, name: string, packaging: 
 		<Modal>
 			<form class="m-modal">
 				<h2 class="modal_head">Nouveau Produit</h2>
+				<div>
+					<label for="new_supplier">Nouveau Fournisseur</label>
+					<input type="checkbox" name="new_supplier" id="new_supplier">
+				</div>
+				<div class="modal_field hidden" id="supplier_ele">
+					<input type="text" name="supplier" id="supplier" class="modal_field_input" autocomplete="off" placeholder="Fournisseur" />
+				</div>
+				<SelectOption cssId="suppliers" id={supplier[0] ? supplier[0].id : ""} value={supplier[0] ? supplier[0].name : ""}>
+					{supplier.map(item=>(
+						<div  data-id={item.id} class="option">{item.name} </div>
+					))}
+				</SelectOption>
 				<div class="modal_field">
 					<input type="text" name="name" id="name" class="modal_field_input" autocomplete="off" placeholder="Produit" />
 				</div>
@@ -43,6 +58,19 @@ const data = await fetchProduit.json() as {id: string, name: string, packaging: 
 </Layout>
 
 <script>
+	const suppliers = document.querySelector("#suppliers") as HTMLDivElement
+	const options = document.querySelectorAll(".option") as NodeListOf<HTMLDivElement>
+	const value = document.querySelector("#select_value") as HTMLParagraphElement
+	options.forEach(option=>{
+		option.onclick = ()=>{
+			value.innerHTML = option.innerHTML
+			value.dataset.id = option.dataset.id
+		}
+	})
+	const isNewSupplier = document.querySelector("#new_supplier") as HTMLInputElement
+	const supplier = document.querySelector("#supplier") as HTMLInputElement
+
+	const newSupplier = document.querySelector("#supplier_ele") as HTMLDivElement
 	const deleteBtn = document.querySelectorAll(".deleteBtn") as NodeListOf<HTMLButtonElement>
 	const submitBtn = document.querySelector(".onAddProduit") as HTMLButtonElement
 	const addBtn = document.querySelector(".addBtn") as HTMLButtonElement
@@ -51,6 +79,15 @@ const data = await fetchProduit.json() as {id: string, name: string, packaging: 
 	const packaging = document.querySelector("#packaging") as HTMLInputElement
 	const price = document.querySelector("#price") as HTMLInputElement
 
+	isNewSupplier.addEventListener("click", ()=>{
+		if (isNewSupplier.checked){
+			newSupplier.classList.remove("hidden") 
+			suppliers.classList.add("hidden")
+		}else{
+			newSupplier.classList.add("hidden")
+			suppliers.classList.remove("hidden") 
+		}
+	})
 	addBtn.addEventListener("click", (e)=>{
 		modal.classList.toggle("open")
 	})
@@ -76,7 +113,7 @@ const data = await fetchProduit.json() as {id: string, name: string, packaging: 
 		const addProduit = await fetch(`http://localhost:5000/api/produit`, {
 			method: "POST",
 			headers: [["Content-Type", "application/json"]],
-			body: JSON.stringify({name: name.value, packaging: parseInt(packaging.value), price: parseFloat(price.value)})
+			body: JSON.stringify({newSupplier: isNewSupplier.checked, supplier: isNewSupplier.checked ? supplier.value : value.dataset.id, name: name.value, packaging: parseInt(packaging.value), price: parseFloat(price.value)})
 		})
 		if (addProduit.status === 200){
 			window.location.reload()
@@ -165,6 +202,12 @@ const data = await fetchProduit.json() as {id: string, name: string, packaging: 
 
 	.modal_head{
 		text-align: center;
+	}
+
+	.option{
+		display: flex;
+		align-items: center;
+		height: 2rem;
 	}
 
 	.onAddProduit{
