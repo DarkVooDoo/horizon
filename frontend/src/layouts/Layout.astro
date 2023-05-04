@@ -29,6 +29,7 @@ import Navbar from "../components/Navbar.astro"
 		--Mobile_Padding: 0 .3rem;
 		--Element_Bottom_Margin: .7rem;
 		--Primary_Color: #5C8DFF;
+		--Navbar_Height: 3rem;
 	}
 	*{
 		font-family: "Roboto", sans-serif;
@@ -38,6 +39,8 @@ import Navbar from "../components/Navbar.astro"
 	}
 	main{
 		padding: var(--Mobile_Padding);
+		min-height: calc(100vh - var(--Navbar_Height));
+		min-width: 100vw;
 	}
 	html {
 		font-family: system-ui, sans-serif;

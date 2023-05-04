@@ -1,8 +1,9 @@
 ---
 import Layout from "@layouts/Layout.astro"
 import Modal from "@components/Modal.astro"
+import SelectOption from "@components/SelectOption.astro"
 
-const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
+const host = import.meta.env.MODE === "production" ? import.meta.env.PRODUCTION_HOST_HOST : import.meta.env.DEV_HOST
 
 const fetchRecettes = await fetch(`http://${host}:5000/api/recipe`)
 const data = await fetchRecettes.json() as {recipe: {id: string, name: string, items: number}[], produit: {id: string, name: string, packaging: number, price: number}[]}
@@ -37,28 +38,27 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         ))}
         <Modal>
             <div class="modal">
-                    <h3 class="modal_header">Nouvelle Recette</h3>
-                    <div class="modal_form">
-                        <div class="modal_recipe_dfield_field">
-                            <input type="text" name="name" id="name" autocomplete="off" placeholder="Nom de la recette" class="modal_recipe_input input_name">
-                        </div>
-                        <div class="modal_recipe_dfield_field">
-                            <input type="number" name="variant" id="variant" autocomplete="off" placeholder="Variante" class="modal_recipe_input">
-                        </div>
-                        <div class="modal_recipe_dfield_field" id="ingredients">
-                            <p id="ingredients_display">{data.produit.length > 0 ? data.produit[0].name : ""} </p>
-                            <div id="ingredients_options" class="hidden">
-                                {data.produit.map(item=>(
-                                    <div  data-id={item.id} class="option">{item.name} </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div class="modal_recipe_dfield_field">
-                            <input type="number" name="quantity" id="quantity" required autocomplete="off" class="modal_recipe_input">
-                            <label for="quantity" class="modal_recipe_label">Quantité</label>
-                        </div>                        
+                <h3 class="modal_header">Nouvelle Recette</h3>
+                <div class="modal_form">
+                    <div class="modal_recipe_dfield_field">
+                        <input type="text" name="name" id="name" autocomplete="off" placeholder="Nom de la recette" class="modal_recipe_input input_name">
                     </div>
-                    <button class="add_recipe_btn">Creer</button>
+                    <div class="modal_recipe_dfield_field">
+                        <input type="number" name="variant" id="variant" autocomplete="off" placeholder="Variante" class="modal_recipe_input">
+                    </div>
+                    <div class="modal_recipe_dfield_field" id="ingredients">
+                        <SelectOption cssId={"test"} id={data.produit.length > 0 ? data.produit[0].id : ""} value={data.produit.length > 0 ? data.produit[0].name : ""}>
+                            {data.produit.map(item=>(
+                                <div  data-id={item.id} class="option">{item.name} </div>
+                            ))}
+                        </SelectOption>
+                    </div>
+                    <div class="modal_recipe_dfield_field">
+                        <input type="number" name="quantity" id="quantity" required autocomplete="off" class="modal_recipe_input">
+                        <label for="quantity" class="modal_recipe_label">Quantité</label>
+                    </div>                        
+                </div>
+                <button class="add_recipe_btn">Creer</button>
             </div>
         </Modal>
     </main>
@@ -73,32 +73,18 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
     const variantInput = document.querySelector("#variant") as HTMLInputElement
     const ingredientInput = document.querySelector("#ingredients") as HTMLSelectElement
     const quantityInput = document.querySelector("#quantity") as HTMLInputElement | null
-    const displayProduit = document.querySelector("#ingredients_display")
-    const optionsParent = document.querySelector("#ingredients_options") as HTMLDivElement
-    const options = document.querySelectorAll(".option") as NodeListOf<HTMLDivElement>
+    const displayProduit = document.querySelector("#select_value") as HTMLDivElement
     const openNewRecipeModal = document.querySelector(".recipe_top_addBtn") as HTMLButtonElement
     const openActions = document.querySelectorAll(".recipes_actions") as NodeListOf<HTMLButtonElement>
     const deleteRecipeBtn = document.querySelectorAll("#delete") as NodeListOf<HTMLParagraphElement>
-    let currentIngredientId:string | undefined = options.length > 0 ? options[0].dataset.id : undefined
             
     openNewRecipeModal.addEventListener("click", (e)=>{
         modal.classList.toggle("open")
     })
-    displayProduit?.addEventListener("click", (e)=>{
-        e.stopPropagation()
-        optionsParent.classList.toggle("hidden")
-    })
 
-    options.forEach(item=>{
-        item.addEventListener("click", (e)=>{
-            displayProduit ? displayProduit.textContent = item.textContent : ""
-            currentIngredientId = item.dataset.id
-            optionsParent.classList.toggle("hidden")
-        })
-    })
     quantityInput?.addEventListener("keypress", (e)=>{
         if (e.key === "Enter"){
-            ingredients.push({id: currentIngredientId, name: displayProduit?.textContent || "", quantity: parseInt(quantityInput.value)})
+            ingredients.push({id: displayProduit.dataset.id, name: displayProduit?.textContent || "", quantity: parseInt(quantityInput.value)})
             const newIngredient = document.createElement("p")
             const quantity = document.createElement("p")
             newIngredient.innerHTML = displayProduit?.textContent || ""
@@ -127,6 +113,7 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
             if(deleteRecipe.status === 200) window.location.reload()
         })
     })
+
     addRecipeBtn?.addEventListener("click", async ()=>{
         if(ingredients.length > 0){
             const addRecipe = await fetch("http://localhost:5000/api/recipe",{
@@ -206,7 +193,6 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         padding: 0 .5rem;
         height: 100%;
         width: 100%;
-        z-index: 1;
     }
     .modal{
         width: 85vw;
@@ -253,24 +239,7 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         top: 2px;
         font-size: .6rem;
     }
-    #ingredients{
-        position: relative;
-        border: 1px solid black;
-    }
-    #ingredients_display{
-        padding: 0 .5rem;
-        height: 100%;
-        width: 100%;
-        display: flex;
-        align-items: center;
-    }
-    #ingredients_options{
-        padding: 0 .5rem;
-        position: absolute;
-        top: 3.1rem;
-        width: 100%;
-        background-color: burlywood;
-    }
+
     .option{
         height: 2rem;
         display: flex;

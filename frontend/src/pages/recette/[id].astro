@@ -1,14 +1,15 @@
 ---
 import Layout from "@layouts/Layout.astro"
 const {id} = Astro.params
-const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
+import Recipe from "/recipe.svg"
+const host = import.meta.env.MODE === "production" ? import.meta.env.PRODUCTION_HOST_HOST : import.meta.env.DEV_HOST
 const recipe = await fetch(`http://${host}:5000/api/recipe?rId=${id}`)
 const data = await recipe.json() as {id: string, name: string, price: number, ingredients: {id: string, name: string, quantity: number, price: number}[]}
 ---
 <Layout title={`${data.name}`}>
     <main>
         <div class="recipe_top">
-            <div class="recipe_logo" />
+            <img src={Recipe} alt="recipe" class="recipe_logo" />
             <div class="recipe_top_content">
                 <h1 class="recipe_name">{data.name} </h1>
                 <div class="recipe_top_content_action">
@@ -67,11 +68,11 @@ const data = await recipe.json() as {id: string, name: string, price: number, in
     .recipe_top{
         display: grid;
         grid-template-columns: 1fr 3fr;
+        margin-top: var(--Element_Bottom_Margin);
     }
     .recipe_logo{
         width: 7rem;
         height: 7rem;
-        border: 1px solid black;
     }
     .recipe_top_content{
         display: flex;

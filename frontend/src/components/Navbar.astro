@@ -4,12 +4,40 @@
 
 <nav class="nav">
     <a href="/">Root</a>
-    <div class="menu">
+    <button class="nav_menu">
         <div class="bar" />
         <div class="bar"/>
         <div class="bar"/>
+        <div class="nav_menu_popup hidden">
+            <a href="/produit" class="nav_menu_popup_link">Produits</a>
+            <a href="/recette" class="nav_menu_popup_link">Recettes</a>
+        </div>
+    </button>
+    <div class="nav_links">
+        <a href="/produit" class="nav_menu_popup_link">Produits</a>
+        <a href="/recette" class="nav_menu_popup_link">Recettes</a>
     </div>
+    <div id="bg_layer" class="hidden" />
 </nav>
+
+<script>
+    const bgLayer = document.querySelector("#bg_layer") as HTMLDivElement
+    const menuBtn = document.querySelector(".nav_menu") as HTMLButtonElement
+    const popup = document.querySelector(".nav_menu_popup") as HTMLDivElement
+    bgLayer.onclick = ()=>{
+        popup.classList.add("hidden")
+        bgLayer.classList.add("hidden")
+    }
+    menuBtn.onclick = (e)=>{
+        e.preventDefault()
+        e.stopPropagation()
+        popup.classList.toggle("hidden")
+        bgLayer.classList.remove("hidden")
+    }
+    popup.onclick = (e)=>{
+        e.stopPropagation()
+    }
+</script>
 
 <style>
     .nav{
@@ -17,11 +45,11 @@
         align-items: center;
         justify-content: space-between;
         padding: var(--Mobile_Padding);
-        height: 3rem;
+        height: var(--Navbar_Height);
         background-color: var(--Primary_Color);
-        margin-bottom: var(--Element_Bottom_Margin);
     }
-    .menu{
+    .nav_menu{
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -31,9 +59,48 @@
         border-radius: 5px;
         border: 1px solid black;
     }
+
+    .nav_menu_popup{
+        position: absolute;
+        top: calc(2.5rem - var(--Navbar_Height));
+        right: -.3rem;
+        height: 100vh;
+        width: 40vw;
+        background-color: lightgray;
+        z-index: 10;
+    }
+
+    .nav_menu_popup_link{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 .5rem;
+        height: 2rem;
+    }
     .bar{
         height: .3rem;
         width: 80%;
         background-color: black;
+    }
+    .nav_links{
+        display: none;
+    }
+    #bg_layer{
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9;
+    }
+    @media screen and (min-width: 768px){
+        .nav_menu{
+            display: none;
+        }
+        .nav_links{
+            display: flex;
+            gap: .5rem;
+        }
     }
 </style>

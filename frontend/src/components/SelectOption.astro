@@ -17,7 +17,16 @@ const {cssId, value, id} = Astro.props
 <script>
     const display = document.querySelector("#select_value") as HTMLParagraphElement
     const options = document.querySelector("#select_option") as HTMLDivElement
-
+    const test = document.querySelectorAll("#select_option > * ") as NodeListOf<HTMLDivElement>
+    test.forEach(option=>{
+        option.onclick = ()=>{
+			display.innerHTML = option.innerHTML
+			display.dataset.id = option.dataset.id
+		}
+    })
+    options.onclick = ()=>{
+        options.classList.add("hidden")
+    }
     display.onclick = ()=>{
         options.classList.toggle("hidden")
     }

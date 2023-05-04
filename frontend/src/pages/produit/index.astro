@@ -4,7 +4,7 @@ import Layout from '@layouts/Layout.astro'
 import SelectOption from '@components/SelectOption.astro'
 import Trash from "/trash.svg"
 const header = ["Produit","Packaging(Gr)","Prix"]
-const host = import.meta.env.DEV ? import.meta.env.DEV_HOST : import.meta.env.PRODUCTION_HOST_HOST
+const host = import.meta.env.MODE === "production" ? import.meta.env.PRODUCTION_HOST_HOST : import.meta.env.DEV_HOST
 const fetchProduit = await fetch(`http://${host}:5000/api/produit`)
 const data = await fetchProduit.json() as {id: string, name: string, packaging: number, price: number}[]
 const fetchSupplier = await fetch(`http://${host}:5000/api/supplier`)
@@ -59,14 +59,7 @@ const supplier = await fetchSupplier.json() as {id: string, name: string}[]
 
 <script>
 	const suppliers = document.querySelector("#suppliers") as HTMLDivElement
-	const options = document.querySelectorAll(".option") as NodeListOf<HTMLDivElement>
-	const value = document.querySelector("#select_value") as HTMLParagraphElement
-	options.forEach(option=>{
-		option.onclick = ()=>{
-			value.innerHTML = option.innerHTML
-			value.dataset.id = option.dataset.id
-		}
-	})
+	const value = document.querySelector("#select_value") as HTMLInputElement
 	const isNewSupplier = document.querySelector("#new_supplier") as HTMLInputElement
 	const supplier = document.querySelector("#supplier") as HTMLInputElement
 
@@ -98,7 +91,6 @@ const supplier = await fetchSupplier.json() as {id: string, name: string}[]
 	deleteBtn.forEach(btn=>{
 		btn.addEventListener("click", async (e:any)=>{
 			const id = e.target.dataset.id 
-			console.log(e.target)
 			const deleteProduit = await fetch(`http://localhost:5000/api/produit`,{
 				method: "DELETE",
 				headers: [["Content-Type", "application/json"], ["Access-Control-Allow-Origin", "*"]],
@@ -109,6 +101,7 @@ const supplier = await fetchSupplier.json() as {id: string, name: string}[]
 			}
 		})
 	})
+
 	const onAddProduit = async ()=>{
 		const addProduit = await fetch(`http://localhost:5000/api/produit`, {
 			method: "POST",

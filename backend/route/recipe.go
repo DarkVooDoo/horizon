@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"momo/db"
 	"momo/util"
@@ -22,6 +23,7 @@ const (
 
 func RecipeRoute(res http.ResponseWriter, req *http.Request) {
 	util.EnableCors(res, "http://localhost:3000")
+	res.Header().Set("Access-Control-Expose-Headers", "Content-Disposition")
 	var recipe FullRecipe
 	var recipes Recipes
 	if req.Method == http.MethodGet {
@@ -36,11 +38,12 @@ func RecipeRoute(res http.ResponseWriter, req *http.Request) {
 			res.Header().Add("Content-Type", "application/json")
 			res.Write(payload)
 		} else if req.Header.Get("x-pdf") != "" {
-			pdfId := req.Header.Get("x-pdf")
-			r, _ := recipe.GetRecipe(pdfId)
-			r.CreatePdfRecipe()
-			res.Header().Add("Content-Disposition", "attachment; filename=test.txt")
-			http.ServeFile(res, req, "test.txt")
+			// pdfId := req.Header.Get("x-pdf")
+			// r, _ := recipe.GetRecipe(pdfId)
+			// r.CreatePdfRecipe()
+			res.Header().Add("Content-Disposition", `attachment; filename="test.txt"`)
+			// http.ServeFile(res, req, "test.txt")
+			res.Write([]byte("Hello"))
 		} else {
 			var produit Produit
 			produits, produitError := produit.GetProduits()
@@ -183,7 +186,7 @@ func (r FullRecipe) CreatePdfRecipe() {
 		pdf.CellFormat(ingredientCellWith, Ingredient_Box_Height, strconv.Itoa(int(ingredient.Quantity)), "1", 0, "C M", false, 0, "")
 		pdf.CellFormat(ingredientCellWith, Ingredient_Box_Height, strconv.Itoa(int(ingredient.Quantity*uint32(r.Variant))), "1", 1, "C M", false, 0, "")
 	}
-	fmt.Println("Finish")
+	log.Println("Finish")
 	pdf.OutputFileAndClose("test.pdf")
 }
 
