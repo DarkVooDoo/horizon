@@ -4,5 +4,6 @@ WORKDIR /app
 RUN mkdir backend
 WORKDIR /app/backend
 COPY . .
+RUN go build .
 EXPOSE 5000
-CMD ["go", "run", "main.go"]
+ENTRYPOINT ["./momo"]

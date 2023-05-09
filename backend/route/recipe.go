@@ -23,7 +23,7 @@ const (
 
 func RecipeRoute(res http.ResponseWriter, req *http.Request) {
 	util.EnableCors(res, "http://localhost:3000")
-	res.Header().Set("Access-Control-Expose-Headers", "Content-Disposition")
+	// res.Header().Set("Access-Control-Expose-Headers", "Content-Disposition")
 	var recipe FullRecipe
 	var recipes Recipes
 	if req.Method == http.MethodGet {
@@ -38,12 +38,11 @@ func RecipeRoute(res http.ResponseWriter, req *http.Request) {
 			res.Header().Add("Content-Type", "application/json")
 			res.Write(payload)
 		} else if req.Header.Get("x-pdf") != "" {
-			// pdfId := req.Header.Get("x-pdf")
-			// r, _ := recipe.GetRecipe(pdfId)
-			// r.CreatePdfRecipe()
-			res.Header().Add("Content-Disposition", `attachment; filename="test.txt"`)
-			// http.ServeFile(res, req, "test.txt")
-			res.Write([]byte("Hello"))
+			pdfId := req.Header.Get("x-pdf")
+			r, _ := recipe.GetRecipe(pdfId)
+			r.CreatePdfRecipe()
+			res.Header().Set("Content-Disposition", `attachment; filename="test.pdf"`)
+			http.ServeFile(res, req, "route/test.pdf")
 		} else {
 			var produit Produit
 			produits, produitError := produit.GetProduits()
@@ -180,14 +179,17 @@ func (r FullRecipe) CreatePdfRecipe() {
 		}
 	}
 	pdf.SetFillColor(255, 255, 255)
-	pdf.SetFontStyle("")
 	for _, ingredient := range r.Ingredients {
 		pdf.CellFormat(ingredientCellWith, Ingredient_Box_Height, ingredient.Name, "1", 0, "C M", false, 0, "")
 		pdf.CellFormat(ingredientCellWith, Ingredient_Box_Height, strconv.Itoa(int(ingredient.Quantity)), "1", 0, "C M", false, 0, "")
 		pdf.CellFormat(ingredientCellWith, Ingredient_Box_Height, strconv.Itoa(int(ingredient.Quantity*uint32(r.Variant))), "1", 1, "C M", false, 0, "")
 	}
-	log.Println("Finish")
-	pdf.OutputFileAndClose("test.pdf")
+
+	err := pdf.OutputFileAndClose("route/test.pdf")
+	if err != nil {
+		log.SetPrefix("Error\t")
+		log.Panicln(err)
+	}
 }
 
 type FullRecipe struct {

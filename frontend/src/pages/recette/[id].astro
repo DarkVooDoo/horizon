@@ -5,6 +5,8 @@ import Recipe from "/recipe.svg"
 const host = import.meta.env.MODE === "production" ? import.meta.env.PRODUCTION_HOST_HOST : import.meta.env.DEV_HOST
 const recipe = await fetch(`http://${host}:5000/api/recipe?rId=${id}`)
 const data = await recipe.json() as {id: string, name: string, price: number, ingredients: {id: string, name: string, quantity: number, price: number}[]}
+const t = await fetch("https://jsonplaceholder.typicode.com/todos/1")
+const pls = await t.json()
 ---
 <Layout title={`${data.name}`}>
     <main>
@@ -12,9 +14,9 @@ const data = await recipe.json() as {id: string, name: string, price: number, in
             <img src={Recipe} alt="recipe" class="recipe_logo" />
             <div class="recipe_top_content">
                 <h1 class="recipe_name">{data.name} </h1>
-                <div class="recipe_top_content_action">
-                    <button class="recipe_top_content_btn">Modifier</button>
-                    <button class="recipe_top_content_btn">Supprimer</button>
+                <div class="recipe_top_content_action" data-id={data.id}>
+                    <button class="recipe_top_content_btn" id="editBtn">Modifier</button>
+                    <button class="recipe_top_content_btn" id="deleteBtn">Supprimer</button>
                 </div>
             </div>
 
@@ -28,6 +30,10 @@ const data = await recipe.json() as {id: string, name: string, price: number, in
             <div class="recipe_ingredient">
                 <h3 class="recipe_ingredient_text">{ingredient.name}</h3>
                 <h3 class="recipe_ingredient_text">{ingredient.quantity} </h3>
+            </div>
+            <div class="recipe_ingredient hidden">
+                <input type="text" class="recipe_ingredient_text ingredient_input" value={ingredient.name} />
+                <input type="number" class="recipe_ingredient_text ingredient_input" value={ingredient.quantity} />
             </div>
         ))}
         <details class="recipe_summary">
@@ -49,12 +55,41 @@ const data = await recipe.json() as {id: string, name: string, price: number, in
 </Layout>
 
 <script>
+    const editBtn = document.querySelector("#editBtn") as HTMLButtonElement
+    const ingredients = document.querySelectorAll(".recipe_ingredient") as NodeListOf<HTMLInputElement>
+    const inputs = document.querySelectorAll(".ingredient_input") as NodeListOf<HTMLInputElement>
+
+    editBtn.onclick = ()=>{
+        editBtn.classList.toggle("activeButton")
+        ingredients.forEach(ingredientElement=>{
+            ingredientElement.classList.toggle("hidden")
+        })
+        if(editBtn.classList.contains("activeButton")){
+            inputs[0].focus()
+        }
+    }
+    const deleteRecipeBtn = document.querySelector("#deleteBtn") as HTMLButtonElement
+    deleteRecipeBtn.addEventListener("click", async(e)=>{
+        e.stopPropagation()
+        const id = deleteRecipeBtn.parentElement?.dataset.id
+        const deleteRecipe = await fetch("http://localhost:5000/api/recipe",{
+            method: "DELETE",
+            headers: [["Content-Type", "application/json"]],
+            body: JSON.stringify({id})
+        })
+        if(deleteRecipe.status === 200) window.location.href = "/"
+    })
     const downloadBtn = document.querySelector(".downloadBtn") as HTMLButtonElement
     downloadBtn.addEventListener("click", async()=>{
         const download = await fetch(`http://localhost:5000/api/recipe`,{
             headers: [["x-pdf", downloadBtn.dataset.id || ""]]
         })
-
+        const blob = await download.blob()
+        const save = document.createElement("a")
+        save.href = URL.createObjectURL(blob)
+        save.download = "recette.pdf"
+        save.click()
+        URL.revokeObjectURL(save.href)
     })
 </script>
 
@@ -95,6 +130,7 @@ const data = await recipe.json() as {id: string, name: string, price: number, in
     .recipe_header, .recipe_ingredient{
         display: grid;
         grid-template-columns: .3fr 2fr 1fr;
+        gap: .3rem;
         align-items: center;
     }
     .recipe_ingredient{
@@ -109,6 +145,15 @@ const data = await recipe.json() as {id: string, name: string, price: number, in
     }
     .recipe_ingredient_text{
         font-weight: 400;
+        font-size: .9rem;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        border: none;
+    }
+    .ingredient_input{
+        background-color: transparent;
     }
     .recipe_prices{
         display: grid;
@@ -136,5 +181,8 @@ const data = await recipe.json() as {id: string, name: string, price: number, in
     }
     .recipe_summary_total_price{
         grid-area: total;
+    }
+    .activeButton{
+        background-color: var(--Primary_Color);
     }
 </style>

@@ -29,13 +29,8 @@
         bgLayer.classList.add("hidden")
     }
     menuBtn.onclick = (e)=>{
-        e.preventDefault()
-        e.stopPropagation()
         popup.classList.toggle("hidden")
         bgLayer.classList.remove("hidden")
-    }
-    popup.onclick = (e)=>{
-        e.stopPropagation()
     }
 </script>
 
@@ -94,13 +89,23 @@
         background-color: rgba(0, 0, 0, 0.5);
         z-index: 9;
     }
+    .nav_menu_popup_link:hover{
+        background-color: darkgray;
+    }
     @media screen and (min-width: 768px){
+        .nav{
+            padding: var(--Tablet_Padding);
+        }
         .nav_menu{
             display: none;
         }
         .nav_links{
             display: flex;
             gap: .5rem;
+        }
+        .nav_menu_popup_link:hover{
+            background-color: transparent;
+            font-weight: bold;
         }
     }
 </style>

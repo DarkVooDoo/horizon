@@ -22,18 +22,18 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
         {data.recipe.map(item=>(
             <div class="recipes_content">
                 <a href={`/recette/${item.id}`} class="recipes_content_box">{item.name} </a>
-                <p class="recipes_content_box">
-                    {item.items}
-                    <button class="recipes_actions">
+                <div class="recipes_content_box">
+                    <p>{item.items}</p>
+                    <div class="recipes_actions">
                         <div class="dot"/>
                         <div class="dot"/>
                         <div class="dot"/> 
                         <div class="recipes_actions_option hidden" data-id={item.id}>
-                            <p >Modifier</p>
-                            <p id="delete">Supprimer</p>
+                            <button class="recipes_actions_option_button">Modifier</button>
+                            <button class="recipes_actions_option_button" id="delete">Supprimer</button>
                         </div>  
-                    </button> 
-                </p>    
+                    </div> 
+                </div>    
             </div>
         ))}
         <Modal>
@@ -75,7 +75,7 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
     const quantityInput = document.querySelector("#quantity") as HTMLInputElement | null
     const displayProduit = document.querySelector("#select_value") as HTMLDivElement
     const openNewRecipeModal = document.querySelector(".recipe_top_addBtn") as HTMLButtonElement
-    const openActions = document.querySelectorAll(".recipes_actions") as NodeListOf<HTMLButtonElement>
+    const openActions = document.querySelectorAll(".recipes_actions") as NodeListOf<HTMLDivElement>
     const deleteRecipeBtn = document.querySelectorAll("#delete") as NodeListOf<HTMLParagraphElement>
             
     openNewRecipeModal.addEventListener("click", (e)=>{
@@ -149,10 +149,25 @@ const data = await fetchRecettes.json() as {recipe: {id: string, name: string, i
     .recipes_actions_option{
         position: absolute;
         right: 0;
-        top: 2.1rem;
+        top: 2.7rem;
         width: 5rem;
-        background-color: darkgray;
+        background-color: lightgray;
         z-index: 2;
+    }
+    .recipes_actions_option::after{
+        content: "";
+        position: absolute;
+        top: -.3rem;
+        right: calc(1rem - .5rem);
+        border: .5rem solid transparent;
+        border-right: .5rem solid lightgray;
+        border-bottom: .5rem solid lightgray;
+        transform: rotate(-135deg);
+    }
+    .recipes_actions_option_button{
+        height: 2rem;
+        width: 100%;
+        background-color: inherit;
     }
     .recipe_top{
         display: flex;

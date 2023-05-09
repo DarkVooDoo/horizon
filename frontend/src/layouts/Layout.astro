@@ -27,6 +27,7 @@ import Navbar from "../components/Navbar.astro"
 		--accent: 124, 58, 237;
 		--accent-gradient: linear-gradient(45deg, rgb(var(--accent)), #da62c4 30%, white 60%);
 		--Mobile_Padding: 0 .3rem;
+		--Tablet_Padding: 0 5rem;
 		--Element_Bottom_Margin: .7rem;
 		--Primary_Color: #5C8DFF;
 		--Navbar_Height: 3rem;
@@ -67,5 +68,10 @@ import Navbar from "../components/Navbar.astro"
 	}
 	#hidden{
 		display: none;
+	}
+	@media screen and (min-width: 768px){
+		main{
+			padding: var(--Tablet_Padding);
+		}
 	}
 </style>
